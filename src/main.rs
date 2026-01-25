@@ -51,13 +51,13 @@ impl TspInstance {
         let mut temp = initial_temp;
 
         for _ in 0..10000 {
-            // Select a segment to reverse
+            // Segment to reverse
             let mut i = rng.random_range(0..n);
             let mut j = rng.random_range(0..n);
             if i > j { std::mem::swap(&mut i, &mut j); }
 
             if i != j {
-                // Perform the 2-opt move
+                // Perform 2-opt
                 current_tour[i..=j].reverse();
 
                 let new_dist = self.calculate_total_distance(&current_tour);
@@ -71,7 +71,7 @@ impl TspInstance {
                         best_tour = current_tour.clone();
                     }
                 } else {
-                    // Reject the move: reverse the segment back
+                    // Reject move: reverse segment
                     current_tour[i..=j].reverse();
                 }
             }
@@ -150,23 +150,23 @@ fn main() {
                 let mut start_tour: Vec<usize> = (0..n).collect();
                 start_tour.shuffle(&mut local_rng);
 
-                // 1. Run Benchmarks
-                // We use .clone() on start_tour so 'two_opt' doesn't consume the only copy
+                // Run Benchmark
+                // .clone() on start_tour so 'two_opt' doesn't consume only copy
                 let sa_result = instance.simulated_annealing(100.0, 0.999);
                 let opt_result = instance.two_opt(start_tour.clone());
 
-                // 2. Selector Makes a Prediction
+                // Selector Prediction
                 let choice = selector.predict(n, density);
                 let chosen_dist = if choice == 1 { opt_result.distance } else { sa_result.distance };
 
-                // 3. Calculate Regret
+                // Calculate Regret
                 let best_dist = sa_result.distance.min(opt_result.distance);
                 total_regret += (chosen_dist - best_dist) / best_dist;
             }
             (-total_regret, p_idx)
         }).collect();
 
-        // Sorting & Reproduction Logic
+        // Sorting & Reproduction
         let mut sorted = scores.clone();
         sorted.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
 
